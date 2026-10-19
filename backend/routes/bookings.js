@@ -3,13 +3,11 @@ const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const Room = require('../models/Room');
 const { protect, adminOnly } = require('../middleware/auth');
+const { startOfToday } = require('../utils/dates');
 
 const router = express.Router();
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
-
-// Today's date at 00:00 (UTC), so we can compare with dates like "2026-11-01"
-const startOfToday = () => new Date(new Date().toISOString().slice(0, 10));
 
 // POST /api/bookings  - create a booking (logged-in user)
 // Body: { roomId, checkIn: "2026-11-01", checkOut: "2026-11-03", guests: 2 }
@@ -141,22 +139,34 @@ router.get('/', protect, adminOnly, async (req, res) => {
 // Body: { status: "checked_in" }
 router.put('/:id/status', protect, adminOnly, async (req, res) => {
   try {
-    const allowed = ['confirmed', 'checked_in', 'checked_out', 'cancelled'];
-    if (!allowed.includes(req.body.status)) {
-      return res.status(400).json({ message: 'Invalid status' });
-    }
+    // Which status can change to which:
+    // confirmed -> checked_in or cancelled,  checked_in -> checked_out
+    const nextAllowed = {
+      confirmed: ['checked_in', 'cancelled'],
+      checked_in: ['checked_out'],
+      checked_out: [],
+      cancelled: [],
+    };
+
     if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(404).json({ message: 'Booking not found' });
     }
-
-    const booking = await Booking.findByIdAndUpdate(
-      req.params.id,
-      { status: req.body.status },
-      { new: true },
-    );
+    const booking = await Booking.findById(req.params.id);
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
+
+    const newStatus = req.body.status;
+    if (!nextAllowed[booking.status].includes(newStatus)) {
+      return res.status(400).json({ message: `Cannot change status from ${booking.status} to ${newStatus}` });
+    }
+    // A guest cannot check in before the check-in date
+    if (newStatus === 'checked_in' && booking.checkIn > startOfToday()) {
+      return res.status(400).json({ message: 'Guest cannot check in before the check-in date' });
+    }
+
+    booking.status = newStatus;
+    await booking.save();
     res.json(booking);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
