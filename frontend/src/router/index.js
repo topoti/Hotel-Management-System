@@ -8,6 +8,8 @@ import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import MyBookingsView from '@/views/MyBookingsView.vue'
 import DashboardView from '@/views/admin/DashboardView.vue'
+import ManageRoomsView from '@/views/admin/ManageRoomsView.vue'
+import AllBookingsView from '@/views/admin/AllBookingsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +21,8 @@ const router = createRouter({
     { path: '/register', name: 'register', component: RegisterView, meta: { guestOnly: true } },
     { path: '/my-bookings', name: 'my-bookings', component: MyBookingsView, meta: { requiresAuth: true } },
     { path: '/admin', name: 'admin-dashboard', component: DashboardView, meta: { requiresAdmin: true } },
+    { path: '/admin/rooms', name: 'admin-rooms', component: ManageRoomsView, meta: { requiresAdmin: true } },
+    { path: '/admin/bookings', name: 'admin-bookings', component: AllBookingsView, meta: { requiresAdmin: true } },
   ],
 })
 
