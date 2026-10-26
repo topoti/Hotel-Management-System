@@ -1,11 +1,12 @@
-// Fills the database with sample rooms and an admin account.
-// Run with: npm run seed   (WARNING: deletes existing rooms and users first)
+// Fills the database with sample rooms, users and bookings.
+// Run with: npm run seed   (WARNING: deletes ALL existing data first)
 require('dotenv').config({ quiet: true });
 const bcrypt = require('bcryptjs');
 const connectDB = require('./config/db');
 const Room = require('./models/Room');
 const User = require('./models/User');
 const Booking = require('./models/Booking');
+const { startOfToday, addDays } = require('./utils/dates');
 
 const rooms = [
   {
@@ -64,16 +65,41 @@ const seed = async () => {
   await User.deleteMany();
 
   // Insert rooms
-  await Room.insertMany(rooms);
+  const savedRooms = await Room.insertMany(rooms);
+  const room = (number) => savedRooms.find((r) => r.roomNumber === number);
 
-  // Create one admin and one guest account for testing
+  // Create accounts for testing (all passwords: 123456)
   const hashedPassword = await bcrypt.hash('123456', 10);
-  await User.create([
+  const [, guest, rahim, nusrat] = await User.create([
     { name: 'Admin', email: 'admin@hotel.com', password: hashedPassword, role: 'admin' },
-    { name: 'Test Guest', email: 'guest@hotel.com', password: hashedPassword, role: 'guest' },
+    { name: 'Test Guest', email: 'guest@hotel.com', password: hashedPassword, phone: '01711111111' },
+    { name: 'Rahim Uddin', email: 'rahim@example.com', password: hashedPassword, phone: '01822222222' },
+    { name: 'Nusrat Jahan', email: 'nusrat@example.com', password: hashedPassword, phone: '01933333333' },
   ]);
 
-  console.log('Sample data inserted: 5 rooms, 1 admin, 1 guest');
+  // Sample bookings around today's date, so the admin dashboard has something to show
+  const today = startOfToday();
+  const booking = (user, roomNumber, startOffset, nights, guests, status) => ({
+    user: user._id,
+    room: room(roomNumber)._id,
+    checkIn: addDays(today, startOffset),
+    checkOut: addDays(today, startOffset + nights),
+    guests,
+    totalPrice: room(roomNumber).price * nights,
+    status,
+  });
+
+  await Booking.insertMany([
+    booking(rahim, '201', -10, 3, 2, 'checked_out'), // stayed last week
+    booking(nusrat, '301', -2, 4, 3, 'checked_in'), // staying now
+    booking(rahim, '202', -3, 3, 2, 'checked_in'), // staying now, leaves today
+    booking(guest, '101', 0, 2, 1, 'confirmed'), // arrives today
+    booking(nusrat, '102', 0, 1, 1, 'confirmed'), // arrives today
+    booking(guest, '201', 7, 3, 2, 'confirmed'), // next week
+    booking(rahim, '301', 14, 2, 4, 'cancelled'), // cancelled
+  ]);
+
+  console.log('Sample data inserted: 5 rooms, 4 users (1 admin), 7 bookings');
   process.exit();
 };
 

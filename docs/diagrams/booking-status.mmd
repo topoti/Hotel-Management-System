@@ -1,0 +1,7 @@
+stateDiagram-v2
+    [*] --> confirmed: Guest books a room
+    confirmed --> checked_in: Admin checks guest in (on/after check-in date)
+    confirmed --> cancelled: Guest or admin cancels
+    checked_in --> checked_out: Admin checks guest out
+    checked_out --> [*]
+    cancelled --> [*]

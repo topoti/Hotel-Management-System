@@ -1,0 +1,8 @@
+flowchart LR
+    B["🌐 Browser<br/>Vue 3 + Bootstrap<br/>(Vue Router, Pinia, Axios)"]
+    S["⚙️ Express API (Node.js)<br/>/api/auth · /api/rooms<br/>/api/bookings · /api/stats<br/>JWT auth middleware"]
+    D[("🗄️ MongoDB<br/>users · rooms · bookings")]
+    B -- "HTTP requests (JSON)<br/>Authorization: Bearer token" --> S
+    S -- "JSON responses" --> B
+    S -- "Mongoose queries" --> D
+    D --> S

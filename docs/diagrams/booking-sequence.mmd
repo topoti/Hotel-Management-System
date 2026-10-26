@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor G as Guest
+    participant V as Vue App
+    participant A as Express API
+    participant M as MongoDB
+
+    G->>V: Choose dates and click "Book Now"
+    V->>A: POST /api/bookings (token, roomId, dates, guests)
+    A->>A: Check token (protect middleware)
+    A->>A: Validate dates and number of guests
+    A->>M: Find room
+    A->>M: Find overlapping booking for this room
+    alt Room already booked
+        M-->>A: Booking found
+        A-->>V: 400 "Room already booked"
+        V-->>G: Show error message
+    else Room is free
+        M-->>A: No booking found
+        A->>A: totalPrice = nights × room price
+        A->>M: Save new booking (status: confirmed)
+        A-->>V: 201 Created
+        V-->>G: Go to My Bookings with success message
+    end

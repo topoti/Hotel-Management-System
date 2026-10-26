@@ -1,0 +1,24 @@
+flowchart LR
+    Visitor(["👤 Visitor"])
+    Guest(["👤 Guest"])
+    Admin(["👤 Admin"])
+
+    subgraph System["Hotel Booking System"]
+        direction TB
+        UC1([View rooms])
+        UC2([Search available rooms])
+        UC3([View room details])
+        UC4([Register])
+        UC5([Login / Logout])
+        UC6([Book a room])
+        UC7([View my bookings])
+        UC8([Cancel booking])
+        UC9([View dashboard])
+        UC10([Add / edit / delete rooms])
+        UC11([View all bookings])
+        UC12([Check guest in / out])
+    end
+
+    Visitor --- UC1 & UC2 & UC3 & UC4
+    Guest --- UC5 & UC6 & UC7 & UC8
+    Admin --- UC5 & UC9 & UC10 & UC11 & UC12

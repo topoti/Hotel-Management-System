@@ -1,0 +1,34 @@
+erDiagram
+    USER ||--o{ BOOKING : makes
+    ROOM ||--o{ BOOKING : "is booked in"
+
+    USER {
+        ObjectId _id PK
+        String name
+        String email UK
+        String password "bcrypt hash"
+        String phone
+        String role "guest | admin"
+        Date createdAt
+    }
+    ROOM {
+        ObjectId _id PK
+        String roomNumber UK
+        String type "Single | Double | Suite"
+        Number price "per night"
+        Number capacity "max guests"
+        String description
+        String image "URL"
+        String[] amenities
+    }
+    BOOKING {
+        ObjectId _id PK
+        ObjectId user FK
+        ObjectId room FK
+        Date checkIn
+        Date checkOut
+        Number guests
+        Number totalPrice
+        String status "confirmed | checked_in | checked_out | cancelled"
+        Date createdAt
+    }

@@ -76,6 +76,9 @@ router.post('/', protect, adminOnly, async (req, res) => {
 // PUT /api/rooms/:id  - update a room (admin only)
 router.put('/:id', protect, adminOnly, async (req, res) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
     const room = await Room.findByIdAndUpdate(req.params.id, req.body, {
       new: true, // return the updated room
       runValidators: true, // check the schema rules again
@@ -93,6 +96,9 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
 // DELETE /api/rooms/:id  - delete a room (admin only)
 router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
     // Don't delete a room that still has active bookings
     const activeBooking = await Booking.findOne({
       room: req.params.id,

@@ -1,9 +1,15 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const route = useRoute()
 const router = useRouter()
+
+// Mobile menu open/closed. Close it every time the page changes.
+const menuOpen = ref(false)
+watch(() => route.fullPath, () => (menuOpen.value = false))
 
 function logout() {
   auth.logout()
@@ -17,11 +23,11 @@ function logout() {
       <RouterLink class="navbar-brand" to="/">🏨 Hotel Booking</RouterLink>
 
       <!-- Hamburger button for small screens -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <button class="navbar-toggler" type="button" @click="menuOpen = !menuOpen">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div id="mainNav" class="collapse navbar-collapse">
+      <div class="collapse navbar-collapse" :class="{ show: menuOpen }">
         <ul class="navbar-nav ms-auto align-items-lg-center">
           <li class="nav-item"><RouterLink class="nav-link" to="/">Home</RouterLink></li>
           <li class="nav-item"><RouterLink class="nav-link" to="/rooms">Rooms</RouterLink></li>
