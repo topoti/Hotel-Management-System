@@ -1,0 +1,11 @@
+# Netlify settings for the Vue frontend (the backend is deployed separately)
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+# Send every URL to index.html so Vue Router can handle it (page refresh, direct links)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
